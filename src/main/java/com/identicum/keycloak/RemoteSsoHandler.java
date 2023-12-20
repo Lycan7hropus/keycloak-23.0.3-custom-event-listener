@@ -1,6 +1,8 @@
 package com.identicum.keycloak;
 
 import com.identicum.http.SimpleHttpResponse;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.apache.http.HttpEntity;
@@ -9,13 +11,11 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.logging.Logger;
 
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
 
 import static com.identicum.http.HttpTools.executeCall;
 import static com.identicum.http.HttpTools.stopOnError;
-import static javax.json.Json.createArrayBuilder;
-import static javax.json.Json.createObjectBuilder;
+import static jakarta.json.Json.createArrayBuilder;
+import static jakarta.json.Json.createObjectBuilder;
 import static org.apache.http.protocol.HTTP.CONN_DIRECTIVE;
 import static org.apache.http.protocol.HTTP.CONN_KEEP_ALIVE;
 import static org.jboss.logging.Logger.getLogger;

@@ -1,14 +1,15 @@
 package com.identicum.http;
 
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 import java.io.StringReader;
 
-import static javax.json.Json.createReader;
+import static jakarta.json.Json.createReader;
+
 
 @Getter
 @AllArgsConstructor
