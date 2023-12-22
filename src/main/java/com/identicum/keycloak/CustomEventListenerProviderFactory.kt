@@ -14,15 +14,11 @@ import org.keycloak.models.KeycloakSession
 import org.keycloak.models.KeycloakSessionFactory
 
 open public class CustomEventListenerProviderFactory : EventListenerProviderFactory {
-
-
     companion object {
         @JvmStatic
         private val logger: Logger = Logger.getLogger(CustomEventListenerProviderFactory::class.java)
     }
     private lateinit var eventNotifier: EventNotifier
-    private lateinit var config: Config.Scope
-
     private val id: String = "custom-event-listener"
 
     override fun create(keycloakSession: KeycloakSession?): EventListenerProvider {
@@ -37,7 +33,6 @@ open public class CustomEventListenerProviderFactory : EventListenerProviderFact
 
 
     public override fun init(config: Config.Scope) {
-        this.config = config
 
         val endpoint: String = config.get("apiEndpoint").also { endpoint ->
             logger.info("Your endpoint is $endpoint")
@@ -66,7 +61,7 @@ open public class CustomEventListenerProviderFactory : EventListenerProviderFact
     }
 
     public override fun getId(): String {
-        return config.get("spiId") ?: id
+        return id
     }
 
 }
