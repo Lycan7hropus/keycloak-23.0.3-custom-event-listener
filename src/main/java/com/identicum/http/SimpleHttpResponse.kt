@@ -1,40 +1,33 @@
-package com.identicum.http;
+package com.identicum.http
 
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-import java.io.StringReader;
-
-import static jakarta.json.Json.createReader;
+import jakarta.json.Json
+import jakarta.json.JsonArray
+import jakarta.json.JsonObject
+import java.io.StringReader
 
 
-@Getter
-@AllArgsConstructor
-public class SimpleHttpResponse {
+class SimpleHttpResponse {
+    private val status = 0
+    private val response: String? = null
 
-	private int status;
-	private String response;
+    val isSuccess: Boolean
+        get() = status == 200
 
-	public boolean isSuccess(){
-		return status == 200;
-	}
+    val responseAsJsonObject: JsonObject?
+        get() {
+            if (this.response != null) {
+                val reader = Json.createReader(StringReader(response))
+                return reader.readObject()
+            }
+            return null
+        }
 
-	public JsonObject getResponseAsJsonObject() {
-		if(this.response != null) {
-			JsonReader reader = createReader(new StringReader(response));
-			return reader.readObject();
-		}
-		return null;
-	}
-
-	public JsonArray getResponseAsJsonArray() {
-		if(this.response != null) {
-			JsonReader reader = createReader(new StringReader(response));
-			return reader.readArray();
-		}
-		return null;
-	}
+    val responseAsJsonArray: JsonArray?
+        get() {
+            if (this.response != null) {
+                val reader = Json.createReader(StringReader(response))
+                return reader.readArray()
+            }
+            return null
+        }
 }

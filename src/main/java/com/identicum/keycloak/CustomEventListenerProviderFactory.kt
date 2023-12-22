@@ -1,81 +1,72 @@
-package com.identicum.keycloak;
+package com.identicum.keycloak
 
-import com.identicum.http.HttpStats;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.SocketConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.jboss.logging.Logger;
-import org.keycloak.Config;
-import org.keycloak.events.EventListenerProvider;
-import org.keycloak.events.EventListenerProviderFactory;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.KeycloakSessionFactory;
 
-import java.util.Timer;
+import com.identicum.keycloak.CustomEventListenerProviderFactory.Constants.API_CONNECTION_REQUEST_TIMEOUT_DEFAULT
+import com.identicum.keycloak.CustomEventListenerProviderFactory.Constants.API_CONNECT_TIMEOUT_DEFAULT
+import com.identicum.keycloak.CustomEventListenerProviderFactory.Constants.API_MAX_CONNECTIONS_DEFAULT
+import com.identicum.keycloak.CustomEventListenerProviderFactory.Constants.API_SOCKET_TIMEOUT_DEFAULT
+import org.apache.http.impl.client.HttpClients
+import org.jboss.logging.Logger
+import org.keycloak.Config
+import org.keycloak.events.EventListenerProvider
+import org.keycloak.events.EventListenerProviderFactory
+import org.keycloak.models.KeycloakSession
+import org.keycloak.models.KeycloakSessionFactory
 
-import static com.identicum.http.Constants.*;
-import static com.identicum.http.HttpTools.closeQuietly;
-import static org.jboss.logging.Logger.getLogger;
+open public class CustomEventListenerProviderFactory : EventListenerProviderFactory {
 
-public class CustomEventListenerProviderFactory implements EventListenerProviderFactory  {
 
-	private static final Logger logger = getLogger(CustomEventListenerProviderFactory.class);
+    companion object {
+        @JvmStatic
+        private val logger: Logger = Logger.getLogger(CustomEventListenerProviderFactory::class.java)
+    }
+    private lateinit var eventNotifier: EventNotifier
+    private lateinit var config: Config.Scope
 
-	private RemoteSsoHandler remoteSsoHandler;
-	private PoolingHttpClientConnectionManager poolingHttpClientConnectionManager;
-	private Integer httpStatsInterval;
-	private Timer httpStats;
+    private val id: String = "custom-event-listener"
 
-	@Override
-	public EventListenerProvider create(KeycloakSession keycloakSession) {
-		return new CustomEventListenerProvider(keycloakSession, this.remoteSsoHandler);
-	}
+    override fun create(keycloakSession: KeycloakSession?): EventListenerProvider {
+        return CustomEventListenerProvider(keycloakSession, eventNotifier)
+    }
+    public object Constants {
+        const val API_MAX_CONNECTIONS_DEFAULT: Int = 10
+        const val API_CONNECTION_REQUEST_TIMEOUT_DEFAULT: Long = 2000
+        const val API_CONNECT_TIMEOUT_DEFAULT: Long = 2000
+        const val API_SOCKET_TIMEOUT_DEFAULT: Long = 5000
+    }
 
-	@Override
-	public void init(Config.Scope config) {
-		String endpoint = config.get("apiEndpoint");
-		Integer maxConnections = config.getInt("apiMaxConnections", API_MAX_CONNECTIONS_DEFAULT);
-		Integer connectionRequestTimeout = config.getInt("apiConnectionRequestTimeout", API_CONNECTION_REQUEST_TIMEOUT_DEFAULT);
-		Integer connectTimeout = config.getInt("apiConnectTimeout", API_CONNECT_TIMEOUT_DEFAULT);
-		Integer socketTimeout = config.getInt("apiSocketTimeout", API_SOCKET_TIMEOUT_DEFAULT);
-		this.httpStatsInterval = config.getInt("httpStatsInterval", HTTP_STATS_INTERVAL_DEFAULT);
-		logger.infov("Initializing HTTP pool with API endpoint: {0}, maxConnections: {1}, connectionRequestTimeout: {2}, connectTimeout: {3}, socketTimeout: {4}", endpoint, maxConnections, connectionRequestTimeout, connectTimeout, socketTimeout);
-		this.poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
-		this.poolingHttpClientConnectionManager.setMaxTotal(maxConnections);
-		this.poolingHttpClientConnectionManager.setDefaultMaxPerRoute(maxConnections);
-		this.poolingHttpClientConnectionManager.setDefaultSocketConfig(SocketConfig.custom()
-			.setSoTimeout(socketTimeout)
-			.build());
-		RequestConfig requestConfig = RequestConfig.custom()
-			.setConnectTimeout(connectTimeout)
-			.setConnectionRequestTimeout(connectionRequestTimeout)
-			.build();
-		CloseableHttpClient httpClient = HttpClients.custom()
-			.setDefaultRequestConfig(requestConfig)
-			.setConnectionManager(this.poolingHttpClientConnectionManager)
-			.build();
-		this.remoteSsoHandler = new RemoteSsoHandler(httpClient, endpoint);
-		if(httpStatsInterval > 0){
-			this.httpStats = new Timer();
-			this.httpStats.schedule(new HttpStats(logger, poolingHttpClientConnectionManager), 0, httpStatsInterval * TO_MILLISECONDS);
-		}
-	}
 
-	@Override
-	public void postInit(KeycloakSessionFactory keycloakSessionFactory) {
-	}
+    public override fun init(config: Config.Scope) {
+        this.config = config
 
-	@Override
-	public void close() {
-		if( this.remoteSsoHandler != null) {
-			closeQuietly( this.remoteSsoHandler.getHttpClient() );
-		}
-	}
+        val endpoint: String = config.get("apiEndpoint").also { endpoint ->
+            logger.info("Your endpoint is $endpoint")
+        } ?: throw IllegalArgumentException("Endpoint is null, please check your configuration")
+        val adminEndpoint: String = config.get("apiAdminEndpoint").also { adminEndpoint ->
+            logger.info("Your admin endpoint is $adminEndpoint")
+        } ?: endpoint
 
-	@Override
-	public String getId() {
-		return "custom-event-listener";
-	}
+
+        val maxConnections: Int = config.getInt("apiMaxConnections", API_MAX_CONNECTIONS_DEFAULT)
+        val connectionRequestTimeout: Long =
+            config.getLong("apiConnectionRequestTimeout", API_CONNECTION_REQUEST_TIMEOUT_DEFAULT)
+        val connectTimeout: Long = config.getLong("apiConnectTimeout", API_CONNECT_TIMEOUT_DEFAULT)
+        val socketTimeout: Long = config.getLong("apiSocketTimeout", API_SOCKET_TIMEOUT_DEFAULT)
+
+        val client = HttpClients.custom().build()
+
+        eventNotifier = EventNotifier(endpoint = endpoint, adminEndpoint = adminEndpoint, client = client)
+    }
+
+    public override fun postInit(p0: KeycloakSessionFactory?) {
+
+    }
+
+    public override fun close() {
+    }
+
+    public override fun getId(): String {
+        return config.get("spiId") ?: id
+    }
+
 }
