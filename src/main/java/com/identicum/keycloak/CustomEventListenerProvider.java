@@ -1,11 +1,14 @@
 package com.identicum.keycloak;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.jboss.logging.Logger;
 import org.keycloak.events.Event;
 import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.models.KeycloakSession;
 
+import java.io.IOException;
 import java.util.Map;
 
 import static org.jboss.logging.Logger.getLogger;
@@ -22,24 +25,26 @@ public class CustomEventListenerProvider implements EventListenerProvider {
 		this.handler = handler;
 	}
 
+	@SneakyThrows
 	@Override
 	public void onEvent(Event event) {
 		logger.debugv("onEvent(Event): {0}", toString(event));
 		if(REGISTER.equals(event.getType())) {
 			String username = event.getDetails().get("username");
-			logger.infov("Username created: {0}", username);
+			logger.infov("Register event: {0}", toString(event));
 			this.publishEvent(username, event);
 		}
 		else if(LOGIN.equals(event.getType())) {
 			String username = event.getDetails().get("username");
-			logger.debugv("User logged in: {0}", username);
+			logger.debugv("Login event: {0}", toJson(event));
 			this.publishEvent(username, event);
 		}
 	}
 
+	@SneakyThrows
 	@Override
 	public void onEvent(AdminEvent adminEvent, boolean includeRepresentation) {
-		logger.tracev("onEvent (AdminEvent): {0}", toString(adminEvent));
+		logger.tracev("onEvent (AdminEvent): {0}", toJson(adminEvent));
 	}
 
 	@Override
@@ -49,10 +54,21 @@ public class CustomEventListenerProvider implements EventListenerProvider {
 
 	private void publishEvent(String username, Event event) {
 		try {
-			this.handler.registerUser(username, event.getRealmId());
+			this.handler.sendEventString(toJson(event));
 		} catch (Exception e) {
 			logger.errorv("Error publishing user event {0}: {1}", username, e);
 		}
+	}
+
+	private String toJson(Event event) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(event);
+	}
+
+
+	private String toJson(AdminEvent event) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.writeValueAsString(event);
 	}
 
 	private String toString(Event event) {
