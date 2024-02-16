@@ -13,7 +13,7 @@ import org.keycloak.events.EventListenerProviderFactory
 import org.keycloak.models.KeycloakSession
 import org.keycloak.models.KeycloakSessionFactory
 
-open public class CustomEventListenerProviderFactory : EventListenerProviderFactory {
+public open class CustomEventListenerProviderFactory : EventListenerProviderFactory {
     companion object {
         @JvmStatic
         private val logger: Logger = Logger.getLogger(CustomEventListenerProviderFactory::class.java)

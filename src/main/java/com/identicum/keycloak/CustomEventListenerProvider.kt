@@ -12,7 +12,7 @@ import org.keycloak.events.admin.AdminEvent
 import org.keycloak.models.KeycloakSession
 
 
-open public class CustomEventListenerProvider(
+public open class CustomEventListenerProvider(
     private val keycloakSession: KeycloakSession?,
     private val eventNotifier: EventNotifier
 ) : EventListenerProvider, CoroutineScope by CoroutineScope(Dispatchers.Default) {

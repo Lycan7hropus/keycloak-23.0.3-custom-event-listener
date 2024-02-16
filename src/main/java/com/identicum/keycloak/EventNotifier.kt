@@ -11,7 +11,7 @@ import org.jboss.logging.Logger
 import org.keycloak.events.Event
 import org.keycloak.events.admin.AdminEvent
 
-open  public class EventNotifier(
+public open class EventNotifier(
     public val endpoint: String,
     public val adminEndpoint: String,
     private val client: CloseableHttpClient,
