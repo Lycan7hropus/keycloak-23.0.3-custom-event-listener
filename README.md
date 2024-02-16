@@ -22,7 +22,6 @@ docker-compose up
 - Sign In again, as the newly registered user
 
 ## How it works
-<TODO>
 
 ## Realm configuration
 A realm is automatically imported to simplify testing.

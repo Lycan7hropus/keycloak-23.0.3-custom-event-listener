@@ -41,6 +41,14 @@ public open class CustomEventListenerProviderFactory : EventListenerProviderFact
             logger.info("Your admin endpoint is $adminEndpoint")
         } ?: endpoint
 
+        logger.info("Keep your secrets!")
+
+        val secretKey =  config.get("secretKey").also {
+            logger.info("Your secretKey endpoint is $it")
+        }
+
+
+
 
         val maxConnections: Int = config.getInt("apiMaxConnections", API_MAX_CONNECTIONS_DEFAULT)
         val connectionRequestTimeout: Long =
@@ -50,7 +58,7 @@ public open class CustomEventListenerProviderFactory : EventListenerProviderFact
 
         val client = HttpClients.custom().build()
 
-        eventNotifier = EventNotifier(endpoint = endpoint, adminEndpoint = adminEndpoint, client = client)
+        eventNotifier = EventNotifier(endpoint = endpoint, secretKey = secretKey, adminEndpoint = adminEndpoint, client = client)
     }
 
     public override fun postInit(p0: KeycloakSessionFactory?) {

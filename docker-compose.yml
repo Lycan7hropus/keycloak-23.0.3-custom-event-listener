@@ -38,6 +38,7 @@ services:
       - start-dev
       - --spi-events-listener-custom-event-listener-api-endpoint=http://host.docker.internal:4040/register
       - --spi-events-listener-custom-event-listener-api-max-connections=3
+      - --spi-events-listener-custom-event-listener-api-secret-key=YOURKEY
       - --spi-events-listener-custom-event-listener-api-socket-timeout=4500
       - --spi-events-listener-custom-event-listener-api-connect-timeout=1000
       - --spi-events-listener-custom-event-listener-api-connection-request-timeout=1000
