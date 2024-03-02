@@ -23,8 +23,6 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package
-        # Dodaj working-directory jeśli twój plik pom.xml nie jest w katalogu głównym
-        # working-directory: ./path/to/your/maven/project
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
