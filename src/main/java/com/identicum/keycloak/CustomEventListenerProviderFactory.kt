@@ -43,7 +43,7 @@ public open class CustomEventListenerProviderFactory : EventListenerProviderFact
 
         logger.info("Keep your secrets!")
 
-        val secretKey =  config.get("secretKey").also {
+        val secretKey:String? =  config.get("secretKey").also {
             logger.info("Your secretKey endpoint is $it")
         }
 

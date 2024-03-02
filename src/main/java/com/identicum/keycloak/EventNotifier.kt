@@ -16,7 +16,7 @@ import javax.crypto.spec.SecretKeySpec
 
 public open class EventNotifier(
     public val endpoint: String,
-    val secretKey: String,
+    val secretKey: String?,
     public val adminEndpoint: String,
     private val client: CloseableHttpClient,
     private val gson: Gson = Gson()
@@ -49,9 +49,10 @@ public open class EventNotifier(
             httpPost.setHeader(HTTP.CONN_DIRECTIVE, HTTP.CONN_KEEP_ALIVE)
             httpPost.setHeader("Content-Type", "application/json")
 
-
-            val hmacSignature = generateHmacSignature(eventData, secretKey)
-            httpPost.setHeader("X-HMAC-Signature", hmacSignature)
+            secretKey?.let {
+                val hmacSignature = generateHmacSignature(eventData, secretKey)
+                httpPost.setHeader("X-HMAC-Signature", hmacSignature)
+            }
 
             httpPost.entity = httpEntity
 
