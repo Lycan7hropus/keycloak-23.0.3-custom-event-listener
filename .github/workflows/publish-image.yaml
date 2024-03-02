@@ -13,13 +13,6 @@ jobs:
     environment: fresh-near-me-environment
 
     steps:
-      - uses: actions/checkout@v2
-
-
-
-
-
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v1
         with:
